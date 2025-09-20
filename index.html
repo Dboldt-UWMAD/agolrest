@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  
+
+
+  <title>Hello, AGOL!</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="" />
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.25/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.25/"></script>
+
+
+  <script>
+    require([
+      "esri/config",
+      "esri/Map",
+      "esri/views/MapView",
+      
+      // adding in the modules for the graphic and graphic layer
+      "esri/Graphic",
+      "esri/layers/GraphicsLayer",
+      
+      //adding in the module for the feature layers
+      "esri/layers/FeatureLayer",
+      
+      "esri/widgets/BasemapGallery"
+    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, BasemapGallery) {
+        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEgdsxN_WfCGs2RqOrNfQW8VulJDY0K9jA0e0QITBUrY6ze4iDm7gGrfnir2Ri5GHwWzw-WqgzUMlQ-Q9B0fa0lpK0zbqoc2sktDyFVJfcEI6nPQn1EnBLvQZAKKvogpUvf9uM-v-c9Ov6xOB18dTpZFTVu-TYgfxLZT3XeGw3kBB2a2F7bO9FIIDUWl8F4ddrvfZVaoA5a5DNk-s3FZKxCTQU90Oj9gImN0eqJvrLprAT1_eMwue8gT";
+        const map = new Map({
+          basemap: "arcgis-streets" // Basemap layer service
+        });
+
+        const view = new MapView({
+          map: map,
+          center: [-87.6298, 41.8781], // Longitude, latitude (Chicago)
+          zoom: 13, // Zoom level
+          container: "viewDiv" // Div element
+        });
+
+        const graphicsLayer = new GraphicsLayer();
+        map.add(graphicsLayer);
+
+        // Define popup template and attributes first
+        const popupTemplate = {
+          title: "{Name}",
+          content: "{Description}"
+        }
+        const attributes = {
+          Name: "Stevie Ray Vaughan Statue",
+          Description: "A bronze sculpture of Stevie Ray Vaughan by Ralph Helmick"
+        }
+
+        // Create a simple Chicago point (triangle)
+        const chicagoPoint = new Graphic({
+          geometry: {
+            type: "point",
+            longitude: -87.6298,
+            latitude: 41.8781
+          },
+          symbol: {
+            type: "simple-marker",
+            style: "triangle",
+            color: [255, 0, 0],
+            size: 20,
+            outline: {
+              color: [255, 255, 255],
+              width: 2
+            }
+          },
+          attributes: attributes,
+          popupTemplate: popupTemplate
+        });
+
+        graphicsLayer.add(chicagoPoint);
+
+        // Create a polyline
+        const polyline = new Graphic({
+          geometry: {
+            type: "polyline",
+            paths: [
+              [-87.630388, 41.902357],  // First point
+              [-87.61035998597549, 41.86602498830019]  // Second point
+            ]
+          },
+          symbol: {
+            type: "simple-line",
+            color: [0, 100, 255],  // Blue line
+            width: 3
+          }
+        });
+        graphicsLayer.add(polyline);
+
+        // Create a triangle polygon
+        const triangle = new Graphic({
+          geometry: {
+            type: "polygon",
+            rings: [
+              [-87.65676055362589, 41.87812632143676],  // First point
+              [-87.66105208773384, 41.870137490957745], // Second point
+              [-87.64534507263971, 41.87582564064402],  // Third point
+              [-87.65676055362589, 41.87812632143676]   // Close the polygon (back to first point)
+            ]
+          },
+          symbol: {
+            type: "simple-fill",
+            color: [138, 43, 226, 0.6],  // Purple with transparency
+            outline: {
+              color: [75, 0, 130],  // Dark purple outline
+              width: 2
+            }
+          }
+        });
+        graphicsLayer.add(triangle);
+
+        // Define a rich pop-up for usaeduLayer
+        const popupEduusa = {
+          "title": "🎓 {INSTNM}",
+          "content": `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+              <div style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; margin: -10px -10px 15px -10px; border-radius: 5px;">
+                <h3 style="margin: 0; text-align: center;">📚 Institution Details</h3>
+              </div>
+              
+              <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                <strong>🏫 Institution Name:</strong><br>
+                <span style="color: #2c3e50; font-size: 16px;">{INSTNM}</span>
+              </div>
+              
+              <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                <strong>🌐 Website:</strong><br>
+                <a href="{WEBADDR}" target="_blank" style="color: #0066cc; text-decoration: none;">Visit Institution Website →</a>
+              </div>
+              
+              <div style="background-color: #d4edda; padding: 10px; border-radius: 5px;">
+                <strong>📍 Location:</strong><br>
+                <span style="color: #155724;">{CITY}, {STABBR}</span>
+              </div>
+              
+              <hr style="margin: 15px 0; border: none; border-top: 2px solid #eee;">
+              <div style="text-align: center; font-size: 12px; color: #6c757d;">
+                <em>Click on other institutions to explore more colleges and universities!</em>
+              </div>
+            </div>
+          `
+        }
+
+        //adding the Const for the feature layer
+        const usaeduLayer = new FeatureLayer({
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Colleges_and_Universities_View/FeatureServer/0",
+
+          //adding the popup here
+          outFields: ["INSTNM","WEBADDR","CITY","STABBR"],
+          popupTemplate: popupEduusa
+        });
+
+        //adding the feature layer to the map
+        map.add(usaeduLayer);
+
+        // Define custom airport renderer with picture marker - need to modify PNG or use different approach
+        const airportRenderer = {
+          "type": "simple",
+          "symbol": {
+            "type": "picture-marker",
+            "url": "https://raw.githubusercontent.com/Dboldt-UWMAD/agol/main/local_airport_24dp_1F1F1F.png",
+            "width": "18px",
+            "height": "18px"
+          }
+        }
+
+        //const to make the airport labels
+        const airportLabels = {
+          symbol: {
+            type: "text",
+            color: "#FFFFFF",
+            haloColor: "#5E8D74",
+            haloSize: "2px",
+            font: {
+              size: "12px",
+              family: "Noto Sans",
+              style: "italic",
+              weight: "normal"
+            }
+          },
+          labelPlacement: "above-center",
+          labelExpressionInfo: {
+            expression: "$feature.Fac_Name"
+          }
+        };
+
+        // Create airport FeatureLayer with custom renderer
+        const airportLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports/FeatureServer",
+          renderer: airportRenderer, //calling the icon
+          definitionExpression: "Fac_Type = 'AIRPORT'", //adding sql to filter for airports
+          labelingInfo: [airportLabels] //adding the labels
+        });
+        map.add(airportLayer);
+
+        // Define custom heliport renderer with helicopter icon
+        const heliportRenderer = {
+          "type": "simple",
+          "symbol": {
+            "type": "picture-marker",
+            "url": "https://raw.githubusercontent.com/Dboldt-UWMAD/agol/main/h_mobiledata_24dp_1F1F1F.png",
+            "width": "18px",
+            "height": "18px",
+            "outline": {
+              "color": [255, 255, 255, 0.9],
+              "width": 3
+            }
+          }
+        }
+
+        // const to make the heliport labels
+        const heliportLabels = {
+          symbol: {
+            type: "text",
+            color: "#FFFFFF",
+            haloColor: "#8D5E74",
+            haloSize: "2px",
+            font: {
+              size: "12px",
+              family: "Noto Sans",
+              style: "italic",
+              weight: "normal"
+            }
+          },
+          labelPlacement: "above-center",
+          labelExpressionInfo: {
+            expression: "$feature.Fac_Name"
+          }
+        };
+
+        // Create heliport FeatureLayer with custom renderer
+        const heliportLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports/FeatureServer",
+          renderer: heliportRenderer, //calling the helicopter icon
+          definitionExpression: "Fac_Type = 'HELIPORT'", //adding sql to filter for heliports
+          labelingInfo: [heliportLabels] //adding the labels
+        });
+        map.add(heliportLayer);
+
+        view.when(function() {
+          // Add basemap gallery widget
+          const basemapGallery = new BasemapGallery({
+            view: view
+          });
+          view.ui.add(basemapGallery, {
+            position: "top-right"
+          });
+
+          // Add Locate widget
+          require(["esri/widgets/Locate"], function(Locate) {
+            const locateWidget = new Locate({
+              view: view
+            });
+            view.ui.add(locateWidget, {
+              position: "top-left"
+            });
+          });
+
+          // Add Search widget
+          require(["esri/widgets/Search"], function(Search) {
+            const searchWidget = new Search({
+              view: view
+            });
+            view.ui.add(searchWidget, {
+              position: "top-left"
+            });
+          });
+        });
+      });
+  </script>
+
+
+
+  <style>  html,  body,  #viewDiv {  padding: 0;  margin: 0;  height: 100%;  width: 100%;  }  </style> 
+
+
+</head>
+<body>
+  <!-- Temp
+  <h1>Hello, world!</h1>
+  <h2>TESTING!</h2>
+  -->
+
+   <div id="viewDiv"></div> 
+
+
+
+</body>
+</html>
