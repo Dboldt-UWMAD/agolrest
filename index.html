@@ -16,6 +16,7 @@
 
   <script>
     require([
+
       "esri/config",
       "esri/Map",
       "esri/views/MapView",
@@ -26,9 +27,14 @@
       
       //adding in the module for the feature layers
       "esri/layers/FeatureLayer",
+
       
-      "esri/widgets/BasemapGallery"
-    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, BasemapGallery) {
+      "esri/widgets/BasemapGallery",
+
+      "esri/widgets/Editor"
+
+
+    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, BasemapGallery, Editor) {
         esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEgdsxN_WfCGs2RqOrNfQW8VulJDY0K9jA0e0QITBUrY6ze4iDm7gGrfnir2Ri5GHwWzw-WqgzUMlQ-Q9B0fa0lpK0zbqoc2sktDyFVJfcEI6nPQn1EnBLvQZAKKvogpUvf9uM-v-c9Ov6xOB18dTpZFTVu-TYgfxLZT3XeGw3kBB2a2F7bO9FIIDUWl8F4ddrvfZVaoA5a5DNk-s3FZKxCTQU90Oj9gImN0eqJvrLprAT1_eMwue8gT";
         const map = new Map({
           basemap: "arcgis-streets" // Basemap layer service
@@ -243,6 +249,32 @@
           labelingInfo: [heliportLabels] //adding the labels
         });
         map.add(heliportLayer);
+
+        //adding the const for the feature layer
+        const myAirports = new FeatureLayer({
+          url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/My_airports_DB/FeatureServer",
+          
+          //adding the popup here
+          outFields: ["AirportCode"],
+
+        });
+
+        //adding the feature layer to the map
+        map.add(myAirports);
+
+        // Set the point layer's LayerInfo
+        const pointInfos = {
+          layer: myAirports
+        }
+
+        // Begin Editor constructor
+        const editor = new Editor({
+          view: view,
+          layerInfos: [pointInfos]
+        }); // End Editor constructor
+
+        // Add the widget to the view
+        view.ui.add(editor, "top-right");
 
         view.when(function() {
           // Add basemap gallery widget
