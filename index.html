@@ -31,10 +31,11 @@
       
       "esri/widgets/BasemapGallery",
 
-      "esri/widgets/Editor"
+  "esri/widgets/Editor",
+  "esri/widgets/Legend"
 
 
-    ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, BasemapGallery, Editor) {
+  ], function(esriConfig, Map, MapView, Graphic, GraphicsLayer, FeatureLayer, BasemapGallery, Editor, Legend) {
         esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEgdsxN_WfCGs2RqOrNfQW8VulJDY0K9jA0e0QITBUrY6ze4iDm7gGrfnir2Ri5GHwWzw-WqgzUMlQ-Q9B0fa0lpK0zbqoc2sktDyFVJfcEI6nPQn1EnBLvQZAKKvogpUvf9uM-v-c9Ov6xOB18dTpZFTVu-TYgfxLZT3XeGw3kBB2a2F7bO9FIIDUWl8F4ddrvfZVaoA5a5DNk-s3FZKxCTQU90Oj9gImN0eqJvrLprAT1_eMwue8gT";
         const map = new Map({
           basemap: "arcgis-streets" // Basemap layer service
@@ -42,7 +43,7 @@
 
         const view = new MapView({
           map: map,
-          center: [-87.6298, 41.8781], // Longitude, latitude (Chicago)
+          center: [-87.91041719164826, 41.98162640624574], // Longitude, latitude (Chicago)
           zoom: 13, // Zoom level
           container: "viewDiv" // Div element
         });
@@ -64,8 +65,8 @@
         const chicagoPoint = new Graphic({
           geometry: {
             type: "point",
-            longitude: -87.6298,
-            latitude: 41.8781
+            longitude: -87.6091, // Navy Pier longitude
+            latitude: 41.8917    // Navy Pier latitude
           },
           symbol: {
             type: "simple-marker",
@@ -105,10 +106,10 @@
           geometry: {
             type: "polygon",
             rings: [
-              [-87.65676055362589, 41.87812632143676],  // First point
-              [-87.66105208773384, 41.870137490957745], // Second point
-              [-87.64534507263971, 41.87582564064402],  // Third point
-              [-87.65676055362589, 41.87812632143676]   // Close the polygon (back to first point)
+              [-87.6091, 41.8917],  // Navy Pier - First point
+              [-87.6096, 41.8912],  // Navy Pier - Second point
+              [-87.6086, 41.8912],  // Navy Pier - Third point
+              [-87.6091, 41.8917]   // Close the polygon (back to first point)
             ]
           },
           symbol: {
@@ -246,7 +247,8 @@
           url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/US_Airports/FeatureServer",
           renderer: heliportRenderer, //calling the helicopter icon
           definitionExpression: "Fac_Type = 'HELIPORT'", //adding sql to filter for heliports
-          labelingInfo: [heliportLabels] //adding the labels
+          labelingInfo: [heliportLabels], //adding the labels
+          title: "US Heliports"
         });
         map.add(heliportLayer);
 
@@ -257,23 +259,24 @@
           //adding the popup here
           outFields: ["AirportCode"],
 
-          // Adding renderer with default esri plane icon
+          // Adding renderer with user-provided plane icon
           renderer: {
             type: "simple",
             symbol: {
-              type: "web-style",
-              styleName: "Esri2DPointSymbolsStyle",
-              name: "airplane"
+              type: "picture-marker",
+              url: "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvcC0zZC1yYXktYWlycGxhbmUtMDAwNi0xLWpvYjYxMV8xLWt6bmozMnZsLnBuZw.png",
+              width: 40,
+              height: 40
             }
           },
 
           // Adding labels for Airport code
           labelingInfo: [{
             symbol: {
-              type: "text",
-              color: "#FFFFFF",
-              haloColor: "#5E8D74",
-              haloSize: "2px",
+                type: "text",
+                color: "#FF0000", // bright red
+                haloColor: "#FFFFFF",
+                haloSize: "2px",
               font: {
                 size: "12px",
                 family: "Noto Sans",
@@ -281,7 +284,7 @@
                 weight: "normal"
               }
             },
-            labelPlacement: "above-center",
+             labelPlacement: "below-center",
             labelExpressionInfo: {
               expression: "$feature.AirportCode"
             }
@@ -314,6 +317,12 @@
           view.ui.add(basemapGallery, {
             position: "top-right"
           });
+
+          // Add Legend widget
+          const legend = new Legend({
+            view: view
+          });
+          view.ui.add(legend, "bottom-left");
 
           // Add Locate widget
           require(["esri/widgets/Locate"], function(Locate) {
