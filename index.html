@@ -257,6 +257,36 @@
           //adding the popup here
           outFields: ["AirportCode"],
 
+          // Adding renderer with default esri plane icon
+          renderer: {
+            type: "simple",
+            symbol: {
+              type: "web-style",
+              styleName: "Esri2DPointSymbolsStyle",
+              name: "airplane"
+            }
+          },
+
+          // Adding labels for Airport code
+          labelingInfo: [{
+            symbol: {
+              type: "text",
+              color: "#FFFFFF",
+              haloColor: "#5E8D74",
+              haloSize: "2px",
+              font: {
+                size: "12px",
+                family: "Noto Sans",
+                style: "italic",
+                weight: "normal"
+              }
+            },
+            labelPlacement: "above-center",
+            labelExpressionInfo: {
+              expression: "$feature.AirportCode"
+            }
+          }]
+
         });
 
         //adding the feature layer to the map
